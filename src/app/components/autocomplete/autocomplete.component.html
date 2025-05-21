@@ -1,0 +1,18 @@
+<div class="wrapper">
+  <div class="control">
+    <input #searchInput type="text" class="input" (keyup)="onSearch($event)" placeholder="Search countries...">
+    <div class="is-loading" *ngIf="loading$ | async">Loading...</div>
+    <div class="error" *ngIf="error$ | async">
+      {{error$ | async}}
+    </div>
+  </div>
+
+  <div class="list" *ngIf="(countries$ | async)?.length">
+    <div class="list-item" *ngFor="let country of countries$ | async">
+      <a [routerLink]="[]" [queryParams]="{ q: country }" queryParamsHandling="merge" (click)="onSelect(country)">
+        {{ country }}
+      </a>
+    </div>
+  </div>
+
+</div>

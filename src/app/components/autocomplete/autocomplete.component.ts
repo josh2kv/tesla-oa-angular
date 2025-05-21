@@ -1,8 +1,20 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+} from '@angular/core';
 import { CountryService } from '../../services/country.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  takeUntil,
+} from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-autocomplete',
@@ -10,7 +22,8 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
   styleUrls: ['./autocomplete.component.css'],
   imports: [CommonModule, RouterModule],
 })
-export class AutocompleteComponent implements OnInit {
+export class AutocompleteComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   constructor(
@@ -22,6 +35,7 @@ export class AutocompleteComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams
       .pipe(
+        takeUntil(this.destroy$),
         distinctUntilChanged(),
         debounceTime(500),
         switchMap((params) => {
@@ -58,5 +72,10 @@ export class AutocompleteComponent implements OnInit {
 
   get error$() {
     return this.countryService.error$;
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
